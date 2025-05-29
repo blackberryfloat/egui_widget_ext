@@ -1,0 +1,30 @@
+name: Main CI (Build + Test)
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Run rustfmt
+        run: cargo fmt --all --check
+      - name: Build
+        run: cargo build --features all --release
+      - name: Tests
+        run: cargo test --features all --verbose
+      - name: Build documentation
+        run: cargo doc --features all --no-deps

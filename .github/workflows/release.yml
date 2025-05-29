@@ -1,0 +1,52 @@
+name: Release (Build + Test + Deploy)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      # Verify the crate version matches the git tag
+      - name: Verify crate version
+        if: github.ref_type == 'tag'
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          CRATE_VERSION=$(grep '^version' Cargo.toml | sed -E 's/version = "(.*)"/\1/')
+          if [ "$TAG_VERSION" != "$CRATE_VERSION" ]; then
+            echo "Error: Git tag version ($TAG_VERSION) does not match crate version ($CRATE_VERSION)."
+            exit 1
+          fi
+      - uses: Swatinem/rust-cache@v2
+      - name: Run rustfmt
+        run: cargo fmt --all --check
+      - name: Build
+        run: cargo build --features all --release
+      - name: Tests
+        run: cargo test --features all --verbose
+      - name: Build documentation
+        run: cargo doc --features all --no-deps
+      - name: Publish to crates.io
+        if: github.ref_type == 'tag'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --features all --verbose
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          prerelease: false
+          generate_release_notes: true

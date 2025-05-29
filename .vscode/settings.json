@@ -1,0 +1,15 @@
+{
+  "editor.formatOnSave": true,
+  "prettier.printWidth": 100,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "rust-analyzer.restartServerOnConfigChange": true,
+  "rust-analyzer.cargo.features": [
+    "all",
+  ],
+  "rust-analyzer.check.extraArgs": [
+    "--all-features",
+  ]
+
+}

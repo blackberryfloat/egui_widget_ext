@@ -1,0 +1,21 @@
+[package]
+name = "egui_widget_ext"
+version = "0.1.0"
+edition = "2024"
+authors = ["Blackberry Float"]
+description = "Set of useful generic EGUI widgets."
+repository = "https://github.com/blackberryfloat/egui_widget_ext"
+readme ="./README.md"
+license = "MIT/Apache-2.0"
+keywords = ["egui", "widget", "gui", "ui", "extension"]
+
+[dependencies]
+egui = "0.31.1"
+
+[features]
+toggle_switch=[]
+alert=[]
+all = ["alert", "toggle_switch"]
+
+[dev-dependencies]
+eframe = "0.31.1"
