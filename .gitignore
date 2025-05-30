@@ -17,4 +17,5 @@ target/
 #.idea/
 
 # The Cargo.lock file is not needed for libraries, but is needed for binaries.
-Cargo.lock
+# Commenting out for now since the github workflow will use it for cache management.
+# Cargo.lock
