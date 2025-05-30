@@ -1,6 +1,6 @@
 [package]
 name = "egui_widget_ext"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Blackberry Float"]
 description = "Set of useful generic EGUI widgets."
