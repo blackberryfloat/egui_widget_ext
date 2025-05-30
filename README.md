@@ -1,3 +1,9 @@
+[![Last Release Status](https://img.shields.io/github/actions/workflow/status/blackberryfloat/egui_widget_ext/release.yml?label=last%20release&style=flat-square)](https://github.com/blackberryfloat/egui_widget_ext/actions/workflows/release.yml)
+[![CI Status](https://img.shields.io/github/actions/workflow/status/blackberryfloat/egui_widget_ext/main_ci.yml?label=main%20ci&style=flat-square)](https://github.com/blackberryfloat/egui_widget_ext/actions/workflows/main_ci.yml)
+[![Issues](https://img.shields.io/github/issues/blackberryfloat/egui_widget_ext?style=flat-square)](https://github.com/blackberryfloat/egui_widget_ext/issues)
+[![docs.rs](https://img.shields.io/docsrs/egui_widget_ext?style=flat-square)](https://docs.rs/egui_widget_ext)
+[![Sponsor](https://img.shields.io/github/sponsors/blackberryfloat?style=social&label=Sponsor&logo=githubsponsors)](https://github.com/sponsors/blackberryfloat)
+
 # Egui Widget Extension Pack
 
 This repo is intended to expand on egui's widgets to include a host of functionality we expect to be standard in web development.
