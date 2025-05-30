@@ -17,7 +17,7 @@
 
 use eframe::egui;
 
-use egui_widget_ext::{AlertLevel, alert};
+use egui_widget_ext::{Alert, AlertLevel, alert};
 
 fn main() -> eframe::Result<()> {
     let native_options = eframe::NativeOptions {
@@ -72,6 +72,7 @@ impl MyEguiApp {
 impl eframe::App for MyEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            ui.add(Alert::new("Welcome to the Alert Demo! This is not closeable.").with_level(AlertLevel::Info).can_close(false));
             if self.state.show_error {
                 // Short error alert using the Alert struct directly
                 use egui_widget_ext::Alert;
