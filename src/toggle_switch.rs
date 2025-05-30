@@ -54,6 +54,20 @@ pub fn toggle_ui(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
 /// # Returns
 /// - An implementation of the `egui::Widget` trait that can be used to add the toggle switch to a UI.
 ///
+/// # Example
+/// ```
+/// # egui::__run_test_ui(|ui| {
+/// use egui_widget_ext::toggle_switch;
+/// let mut is_on = false;
+/// let resp = ui.add(toggle_switch(&mut is_on));
+/// if is_on {
+///    println!("Toggle is ON");
+/// } else {
+///   println!("Toggle is OFF");
+/// }
+/// # });
+/// ```
+///
 /// # Behavior
 /// - This function returns a closure that calls `toggle_ui` with the provided `on` state and the UI context.
 /// - It allows the toggle switch to be easily embedded in an `egui` UI layout.

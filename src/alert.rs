@@ -4,15 +4,14 @@
 //! The alert box displays a message with a severity level (success, info, warning, error) and
 //! includes a close ("✕") button. The appearance of the alert can be customized via margins and corner radius.
 //!
-//! ## Usage
-//!
-//! ```rust
+//! ## Example
+//! ```
+//! # egui::__run_test_ui(|ui| {
 //! use egui_widget_ext::{alert, AlertLevel};
-//! let mut ui = egui::Ui::__test();
-//! let response = ui.add(alert(AlertLevel::Warning, "This is a warning!"));
-//! if response.clicked() {
+//! ui.add(alert(AlertLevel::Warning, "This is a warning!")).clicked().then(|| {
 //!     println!("Alert clicked!");
-//! }
+//! });
+//! # });
 //! ```
 //!
 //! ## Components
@@ -165,13 +164,13 @@ impl Widget for Alert {
 /// Returns an [`egui::Widget`] closure. When invoked, it returns an [`egui::Response`] for the alert box.
 ///
 /// # Example
-/// ```rust
-/// # use egui_widget_ext::{alert, AlertLevel};
-/// # let mut ui = egui::Ui::__test();
-/// let response = ui.add(alert(AlertLevel::Info, "Informational message"));
-/// if response.clicked() {
-///     // Handle alert click
-/// }
+/// ```
+/// # egui::__run_test_ui(|ui| {
+/// use egui_widget_ext::{alert, AlertLevel};
+/// ui.add(alert(AlertLevel::Warning, "This is a warning!")).clicked().then(|| {
+///     println!("Alert clicked!");
+/// });
+/// # });
 /// ```
 pub fn alert(level: AlertLevel, message: &str) -> impl Widget + '_ {
     move |ui: &mut Ui| ui.add(Alert::new(message).with_level(level))
