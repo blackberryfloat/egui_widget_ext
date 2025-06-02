@@ -47,6 +47,7 @@ pub enum AlertLevel {
 /// and the corner radius. The alert box always includes a close ("✕") button.
 ///
 /// Use the [`alert`] function for a convenient way to create an alert with a given level and message.
+#[derive(Debug, Clone)]
 pub struct Alert {
     /// The background color of the alert box.
     color: Color32,
@@ -58,6 +59,8 @@ pub struct Alert {
     outer_margin: i8,
     /// Corner radius of the alert box.
     corner_radius: u8,
+    /// Whether to show the close ("✕") button.
+    can_close: bool,
 }
 
 impl Default for Alert {
@@ -69,6 +72,7 @@ impl Default for Alert {
             inner_margin: 10,
             outer_margin: 10,
             corner_radius: 4,
+            can_close: true, // Show close button by default
         }
     }
 }
@@ -108,6 +112,12 @@ impl Alert {
         self
     }
 
+    /// Set whether the close ("✕") button is shown.
+    pub fn can_close(mut self, closeable: bool) -> Self {
+        self.can_close = closeable;
+        self
+    }
+
     /// Map an [`AlertLevel`] to its corresponding background color.
     fn level_to_color(level: AlertLevel) -> Color32 {
         match level {
@@ -122,8 +132,8 @@ impl Alert {
 impl Widget for Alert {
     /// Render the alert widget in the given egui UI context.
     ///
-    /// The alert is displayed as a colored frame with the message and a close button.
-    /// The returned [`egui::Response`] covers both the label and the close button.
+    /// The alert is displayed as a colored frame with the message and an optional close button.
+    /// The returned [`egui::Response`] covers both the label and the close button (if present).
     fn ui(self, ui: &mut Ui) -> egui::Response {
         let frame = Frame::default()
             .fill(self.color)
@@ -137,16 +147,23 @@ impl Widget for Alert {
                 ui.horizontal(|ui| {
                     let label_resp = ui
                         .add(Label::new(RichText::new(&self.message).color(Color32::BLACK)).wrap());
-                    let close_resp = ui
-                        .with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            ui.add(
-                                Button::new(RichText::new("X").color(Color32::DARK_RED).strong())
+                    let response = if self.can_close {
+                        let close_resp = ui
+                            .with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                ui.add(
+                                    Button::new(
+                                        RichText::new("X").color(Color32::DARK_RED).strong(),
+                                    )
                                     .frame(false),
-                            )
-                        })
-                        .inner;
-                    // Combine the responses so either clicking the label or close button registers as a response.
-                    label_resp | close_resp
+                                )
+                            })
+                            .inner;
+                        label_resp | close_resp
+                    } else {
+                        ui.add_space(ui.available_width());
+                        label_resp
+                    };
+                    response
                 })
                 .inner
             })

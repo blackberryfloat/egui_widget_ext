@@ -17,29 +17,17 @@
 use eframe::egui;
 use egui_widget_ext::toggle_switch;
 
-fn main() -> eframe::Result<()> {
-    let native_options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_maximized(true),
-        ..Default::default()
-    };
-    eframe::run_native(
-        "Toggle Switch Demo",
-        native_options,
-        Box::new(|cc| Ok(Box::new(MyEguiApp::new(cc)))),
-    )
-}
-
-struct MyEguiApp {
+struct ToggleSwitchApp {
     is_on: bool,
 }
 
-impl MyEguiApp {
+impl ToggleSwitchApp {
     fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         Self { is_on: false }
     }
 }
 
-impl eframe::App for MyEguiApp {
+impl eframe::App for ToggleSwitchApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
@@ -53,4 +41,16 @@ impl eframe::App for MyEguiApp {
             });
         });
     }
+}
+
+fn main() -> eframe::Result<()> {
+    let native_options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_maximized(true),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "Toggle Switch Demo",
+        native_options,
+        Box::new(|cc| Ok(Box::new(ToggleSwitchApp::new(cc)))),
+    )
 }
