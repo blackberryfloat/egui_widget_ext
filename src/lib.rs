@@ -20,3 +20,7 @@ pub use alert::{Alert, AlertLevel, alert};
 mod toast;
 #[cfg(feature = "toast")]
 pub use toast::Toast;
+#[cfg(feature = "alert_manager")]
+mod alert_manager;
+#[cfg(feature = "alert_manager")]
+pub use alert_manager::{AlertManager, alert_manager};

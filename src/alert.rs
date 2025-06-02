@@ -28,7 +28,7 @@ use egui::{Button, Color32, CornerRadius, Frame, Label, Margin, RichText, Stroke
 /// - `Info`: Indicates informational messages that are not critical (blue).
 /// - `Warning`: Indicates a warning that may require attention but is not critical (yellow).
 /// - `Error`: Indicates an error or critical issue that needs immediate attention (red).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AlertLevel {
     /// Indicates a successful operation or state.
     Success,
@@ -61,6 +61,8 @@ pub struct Alert {
     corner_radius: u8,
     /// Whether to show the close ("✕") button.
     can_close: bool,
+    /// Optional width constraint for the alert box.
+    width: Option<f32>,
 }
 
 impl Default for Alert {
@@ -70,9 +72,10 @@ impl Default for Alert {
             color: Color32::from_rgb(255, 200, 200),
             message: "No message provided".to_string(),
             inner_margin: 10,
-            outer_margin: 10,
+            outer_margin: 1,
             corner_radius: 4,
             can_close: true, // Show close button by default
+            width: None,
         }
     }
 }
@@ -118,6 +121,12 @@ impl Alert {
         self
     }
 
+    /// Set the width of the alert box.
+    pub fn width(mut self, width: f32) -> Self {
+        self.width = Some(width);
+        self
+    }
+
     /// Map an [`AlertLevel`] to its corresponding background color.
     fn level_to_color(level: AlertLevel) -> Color32 {
         match level {
@@ -135,35 +144,35 @@ impl Widget for Alert {
     /// The alert is displayed as a colored frame with the message and an optional close button.
     /// The returned [`egui::Response`] covers both the label and the close button (if present).
     fn ui(self, ui: &mut Ui) -> egui::Response {
-        let frame = Frame::default()
+        ui.set_width(self.width.unwrap_or(ui.available_width()));
+        Frame::default()
             .fill(self.color)
             .stroke(Stroke::new(1.0, Color32::from_rgb(200, 200, 200)))
             .corner_radius(CornerRadius::same(self.corner_radius))
             .inner_margin(Margin::same(self.inner_margin))
-            .outer_margin(Margin::same(self.outer_margin));
-
-        frame
+            .outer_margin(Margin::same(self.outer_margin))
             .show(ui, |ui| {
                 ui.horizontal(|ui| {
-                    let label_resp = ui
-                        .add(Label::new(RichText::new(&self.message).color(Color32::BLACK)).wrap());
-                    let response = if self.can_close {
-                        let close_resp = ui
-                            .with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                ui.add(
-                                    Button::new(
-                                        RichText::new("X").color(Color32::DARK_RED).strong(),
-                                    )
+                    if self.can_close {
+                        let _r2 = ui.add_enabled(
+                            false,
+                            Label::new(RichText::new(&self.message).color(Color32::BLACK)).wrap(),
+                        );
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.add(
+                                Button::new(RichText::new("X").color(Color32::DARK_RED).strong())
                                     .frame(false),
-                                )
-                            })
-                            .inner;
-                        label_resp | close_resp
+                            )
+                        })
+                        .inner
                     } else {
+                        let label_resp = ui.add_enabled(
+                            false,
+                            Label::new(RichText::new(&self.message).color(Color32::BLACK)).wrap(),
+                        );
                         ui.add_space(ui.available_width());
                         label_resp
-                    };
-                    response
+                    }
                 })
                 .inner
             })
