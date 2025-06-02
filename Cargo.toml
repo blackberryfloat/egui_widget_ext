@@ -16,7 +16,8 @@ egui = "0.31.1"
 [features]
 toggle_switch=[]
 alert=[]
-all = ["alert", "toggle_switch"]
+toast=[]
+all = ["alert", "toggle_switch", "toast"]
 
 [dev-dependencies]
 eframe = "0.31.1"

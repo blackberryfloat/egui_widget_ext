@@ -47,6 +47,7 @@ pub enum AlertLevel {
 /// and the corner radius. The alert box always includes a close ("✕") button.
 ///
 /// Use the [`alert`] function for a convenient way to create an alert with a given level and message.
+#[derive(Debug, Clone)]
 pub struct Alert {
     /// The background color of the alert box.
     color: Color32,

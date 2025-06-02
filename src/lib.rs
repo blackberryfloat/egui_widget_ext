@@ -16,3 +16,7 @@ pub use toggle_switch::toggle_switch;
 mod alert;
 #[cfg(feature = "alert")]
 pub use alert::{Alert, AlertLevel, alert};
+#[cfg(feature = "toast")]
+mod toast;
+#[cfg(feature = "toast")]
+pub use toast::Toast;
