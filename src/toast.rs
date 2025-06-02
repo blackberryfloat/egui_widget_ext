@@ -17,13 +17,9 @@
 //! ## Example
 //! ```
 //! # egui::__run_test_ui(|ui| {
-//! use egui_widget_ext::toast;
 //! use egui_widget_ext::Toast;
 //! use egui::Color32;
 //! use std::time::Duration;
-//!
-//! // Using the convenience function
-//! ui.add(toast("This is a toast message!"));
 //!
 //! // Using the struct directly and exercising all configuration methods
 //! let custom_toast = Toast::new("Custom toast")
