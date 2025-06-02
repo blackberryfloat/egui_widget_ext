@@ -11,11 +11,14 @@
 //! alignment, custom position, anchor offset, and maximum height for the alert area. Each alert is rendered
 //! using the `Alert` widget, and closed alerts are automatically removed from the vector.
 //!
-//! **Recommended:**  
-//! Place the `AlertManager` at the root level of your egui widget tree (such as inside your `CentralPanel`,
-//! or as a top-level overlay) to ensure that alerts are positioned and layered correctly above
-//! your main content. However, you can technically use it anywhere in your widget hierarchy if you
-//! want to scope alerts to a specific region or panel.
+//! The `AlertManager` is designed to be an overlay that dynamically sizes to its content allowing
+//! non-covered areas to remain interactive but also switches to a scrollable area if the number of
+//! alerts results in a full screen. The overlay is positioned within the parent area based on the
+//! specified anchor alignment and optional offset. This setup allows for flexible placement but is
+//! best suited for dead center top/bottom for the central panel or as a side panel.
+//!
+//! It is recommended to leave the width/height alone and let it inherit from the parent area, but
+//! you have the option to set both if desired.
 //!
 //! ## Example
 //! ```rust
@@ -45,7 +48,7 @@
 //! `(AlertLevel, String)`. You can push new alerts to the vector at any time, and they will be displayed
 //! until dismissed by the user.
 
-use egui::{Align2, Id, Order, ScrollArea, Ui, UiBuilder, Vec2, Widget, WidgetWithState};
+use egui::{Align2, Id, Order, ScrollArea, Ui, Vec2, Widget, WidgetWithState};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -172,7 +175,7 @@ impl<'a> Widget for AlertManager<'a> {
         let mut to_remove = Vec::new();
 
         // Generate a unique area for unique alert manager data
-        // TODO: this may be a memory leak
+        // TODO: this is probably a memory leak but alerts should not be high frequency
         let mut hasher = DefaultHasher::new();
         self.alerts.hash(&mut hasher);
         let alerts_hash = hasher.finish();
@@ -184,9 +187,7 @@ impl<'a> Widget for AlertManager<'a> {
             alerts_hash
         ));
 
-        let is_bottom = self.anchor == Align2::LEFT_BOTTOM
-            || self.anchor == Align2::CENTER_BOTTOM
-            || self.anchor == Align2::RIGHT_BOTTOM;
+        // Determine best size limits
         let max_height = self
             .max_height
             .unwrap_or(parent_area.height())
@@ -196,13 +197,16 @@ impl<'a> Widget for AlertManager<'a> {
             .unwrap_or(parent_area.width())
             .min(parent_area.width());
 
-        let resp = egui::Area::new(id)
+        // Create floating area for the alert manager
+        egui::Area::new(id)
             .order(Order::Foreground)
             .anchor(self.anchor, self.anchor_offset.unwrap_or(Vec2::ZERO))
             .constrain_to(parent_area)
             .default_size(Vec2::new(max_width, max_height))
             .show(ui.ctx(), |ui| {
                 if !ui.is_enabled() && !ui.is_visible() {
+                    // Detect sizing pass: do not use ScrollArea since that will hide the content size
+                    // resulting in a chicken and egg problem.
                     for (level, message) in self.alerts.iter() {
                         let mut alert = Alert::new(message)
                             .with_level(*level)
@@ -216,12 +220,16 @@ impl<'a> Widget for AlertManager<'a> {
                         ui.add(alert);
                     }
                 } else {
+                    let is_bottom = self.anchor == Align2::LEFT_BOTTOM
+                        || self.anchor == Align2::CENTER_BOTTOM
+                        || self.anchor == Align2::RIGHT_BOTTOM;
                     // Normal pass: use ScrollArea
                     let scroll_resp = ScrollArea::both()
                         .stick_to_bottom(is_bottom)
                         .max_height(max_height)
                         .max_width(max_width)
                         .show(ui, |ui| {
+                            // Reverse alerts order if bottom anchor
                             let alert_iter: Box<
                                 dyn Iterator<Item = (usize, &(AlertLevel, String))>,
                             > = if is_bottom {
@@ -230,6 +238,7 @@ impl<'a> Widget for AlertManager<'a> {
                                 Box::new(self.alerts.iter().enumerate())
                             };
 
+                            // Iterate through alerts and render them
                             for (idx, (level, message)) in alert_iter {
                                 let mut alert = Alert::new(message)
                                     .with_level(*level)
@@ -246,6 +255,7 @@ impl<'a> Widget for AlertManager<'a> {
                                 }
                             }
 
+                            // Remove closed alerts in reverse order to avoid index shifting issues
                             for idx in to_remove.into_iter().rev() {
                                 self.alerts.remove(idx);
                             }
@@ -253,9 +263,7 @@ impl<'a> Widget for AlertManager<'a> {
                     scroll_resp.inner
                 }
             })
-            .response;
-
-        resp
+            .response
     }
 }
 
