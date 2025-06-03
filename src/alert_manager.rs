@@ -26,12 +26,11 @@
 //! # use egui::{CentralPanel, Context};
 //! # fn ui_example(ctx: &Context, alerts: &mut Vec<(AlertLevel, String)>) {
 //! CentralPanel::default().show(ctx, |ui| {
-//!     AlertManager::new(alerts)
+//!     ui.add(AlertManager::new(alerts, "main")
 //!         .corner_radius(8)
 //!         .width(400.0)
 //!         .anchor(egui::Align2::CENTER_TOP)
-//!         .max_height(300.0)
-//!         .ui(ui);
+//!         .max_height(300.0));
 //! });
 //! # }
 //! ```
@@ -48,7 +47,6 @@
 //! `(AlertLevel, String)`. You can push new alerts to the vector at any time, and they will be displayed
 //! until dismissed by the user.
 
-use core::hash;
 use egui::{Align2, Id, Order, ScrollArea, Ui, Vec2, Widget};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -56,8 +54,6 @@ use std::hash::{Hash, Hasher};
 use crate::{Alert, AlertLevel};
 
 /// Manages and displays a list of alerts with shared styling and positioning.
-///
-/// See the [module-level documentation](self) for usage and configuration details.
 #[derive(Debug)]
 pub struct AlertManager<'a> {
     /// Unique key for the alert manager instance (used for state management).

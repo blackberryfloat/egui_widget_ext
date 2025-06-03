@@ -25,13 +25,13 @@
 //!
 //! ## Example
 //! ```rust
-//! # use egui_widget_ext::{ToastManager, toast, toast_manager};
+//! # use egui_widget_ext::{ToastManager, Toast, toast, toast_manager};
 //! # use std::collections::VecDeque;
 //! # fn ui_example(ui: &mut egui::Ui) {
 //! let mut toasts = VecDeque::from([
 //!     // Convenience function to create a default toast
-//!     toast("Saved successfully!".to_string()),
-//!     toast("Error occurred".to_string()),
+//!     toast("Saved successfully!"),
+//!     toast("Error occurred"),
 //!     // Custom toast with specific styling
 //!     Toast::new("This is a custom toast!")
 //!         .with_color(egui::Color32::from_rgb(255, 200, 200))
@@ -216,9 +216,11 @@ impl<'a> Widget for ToastManager<'a> {
 ///
 /// # Example
 /// ```
+/// # use egui_widget_ext::{ToastManager, toast, toast_manager};
+/// # use std::collections::VecDeque;
 /// # egui::__run_test_ui(|ui| {
-/// # let mut toasts = VecDeque::from([(String::from("Hello!"), 2.0)]);
-/// ui.add(egui_widget_ext::toast_manager(&mut toasts, "main"));
+/// let mut toasts = VecDeque::from([toast("Hello, World!")]);
+/// ui.add(toast_manager(&mut toasts, "main"));
 /// # });
 /// ```
 pub fn toast_manager<'a>(
