@@ -6,7 +6,7 @@
 //!
 //! ## Usage
 //!
-//! The `AlertManager` takes a mutable reference to a `Vec<(AlertLevel, String)>` representing the current
+//! The `AlertManager` takes a mutable reference to a `Mutex<Vec<Alert>>` representing the current
 //! alerts to display. It provides builder-style methods to configure margins, corner radius, width, anchor
 //! alignment, custom position, anchor offset, and maximum height for the alert area. Each alert is rendered
 //! using the `Alert` widget, and closed alerts are automatically removed from the vector.
@@ -22,9 +22,9 @@
 //!
 //! ## Example
 //! ```rust
-//! # use egui_widget_ext::{AlertManager, AlertLevel};
+//! # use egui_widget_ext::{AlertManager, Alert};
 //! # use egui::{CentralPanel, Context};
-//! # fn ui_example(ctx: &Context, alerts: &mut Vec<(AlertLevel, String)>) {
+//! # fn ui_example(ctx: &Context, alerts: &mut Mutex<Vec<Alert>>) {
 //! CentralPanel::default().show(ctx, |ui| {
 //!     ui.add(AlertManager::new(alerts, "main")
 //!         .corner_radius(8)
@@ -44,14 +44,15 @@
 //!
 //! ## Note
 //! The alert manager is intended for use with the `Alert` widget and expects each alert to be a tuple of
-//! `(AlertLevel, String)`. You can push new alerts to the vector at any time, and they will be displayed
+//! `Alert`. You can push new alerts to the vector at any time, and they will be displayed
 //! until dismissed by the user.
 
 use egui::{Align2, Id, Order, ScrollArea, Ui, Vec2, Widget};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::sync::Mutex;
 
-use crate::{Alert, AlertLevel};
+use crate::Alert;
 
 /// Manages and displays a list of alerts with shared styling and positioning.
 #[derive(Debug)]
@@ -59,7 +60,7 @@ pub struct AlertManager<'a> {
     /// Unique key for the alert manager instance (used for state management).
     pub unique_key: String,
     /// List of alerts as (level, message) tuples.
-    pub alerts: &'a mut Vec<(AlertLevel, String)>,
+    pub alerts: &'a mut Mutex<Vec<Alert>>,
     /// Default inner margin for alerts.
     pub inner_margin: i8,
     /// Default outer margin for alerts.
@@ -81,7 +82,11 @@ pub struct AlertManager<'a> {
 impl Hash for AlertManager<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.unique_key.hash(state);
-        self.alerts.hash(state);
+        if let Ok(alerts) = self.alerts.try_lock() {
+            for a in alerts.iter() {
+                a.hash(state);
+            }
+        }
         self.inner_margin.hash(state);
         self.outer_margin.hash(state);
         self.corner_radius.hash(state);
@@ -98,7 +103,7 @@ impl Hash for AlertManager<'_> {
 
 impl<'a> AlertManager<'a> {
     /// Create a new alert manager with a reference to a list of alerts.
-    pub fn new(alerts: &'a mut Vec<(AlertLevel, String)>, unique_key: &str) -> Self {
+    pub fn new(alerts: &'a mut Mutex<Vec<Alert>>, unique_key: &str) -> Self {
         Self {
             unique_key: format!("alert_manager_{}", unique_key),
             alerts,
@@ -211,17 +216,19 @@ impl<'a> Widget for AlertManager<'a> {
                 if !ui.is_enabled() && !ui.is_visible() {
                     // Detect sizing pass: do not use ScrollArea since that will hide the content size
                     // resulting in a chicken and egg problem.
-                    for (level, message) in self.alerts.iter() {
-                        let mut alert = Alert::new(message)
-                            .with_level(*level)
-                            .inner_margin(self.inner_margin)
-                            .outer_margin(self.outer_margin)
-                            .corner_radius(self.corner_radius)
-                            .can_close(self.can_close);
-                        if self.width.is_some() {
-                            alert = alert.width(self.width.unwrap());
+                    if let Ok(alerts) = self.alerts.try_lock() {
+                        for alert in alerts.iter() {
+                            let mut new_alert = alert
+                                .clone()
+                                .inner_margin(self.inner_margin)
+                                .outer_margin(self.outer_margin)
+                                .corner_radius(self.corner_radius)
+                                .can_close(self.can_close);
+                            if self.width.is_some() {
+                                new_alert = new_alert.width(self.width.unwrap());
+                            }
+                            ui.add(new_alert);
                         }
-                        ui.add(alert);
                     }
                 } else {
                     let is_bottom = self.anchor == Align2::LEFT_BOTTOM
@@ -233,37 +240,38 @@ impl<'a> Widget for AlertManager<'a> {
                         .max_height(max_height)
                         .max_width(max_width)
                         .show(ui, |ui| {
-                            // Reverse alerts order if bottom anchor
-                            let alert_iter: Box<
-                                dyn Iterator<Item = (usize, &(AlertLevel, String))>,
-                            > = if is_bottom {
-                                // FIFO order for bottom anchor so newest alerts appear at the bottom
-                                Box::new(self.alerts.iter().enumerate())
-                            } else {
-                                // LIFO order for top anchor so newest alerts appear at the top
-                                Box::new(self.alerts.iter().enumerate().rev())
-                            };
+                            if let Ok(alerts) = self.alerts.try_lock().as_mut() {
+                                // Reverse alerts order if bottom anchor
+                                let alert_iter: Box<dyn Iterator<Item = (usize, &Alert)>> =
+                                    if is_bottom {
+                                        // FIFO order for bottom anchor so newest alerts appear at the bottom
+                                        Box::new(alerts.iter().enumerate())
+                                    } else {
+                                        // LIFO order for top anchor so newest alerts appear at the top
+                                        Box::new(alerts.iter().enumerate().rev())
+                                    };
 
-                            // Iterate through alerts and render them
-                            for (idx, (level, message)) in alert_iter {
-                                let mut alert = Alert::new(message)
-                                    .with_level(*level)
-                                    .inner_margin(self.inner_margin)
-                                    .outer_margin(self.outer_margin)
-                                    .corner_radius(self.corner_radius)
-                                    .can_close(self.can_close);
-                                if self.width.is_some() {
-                                    alert = alert.width(self.width.unwrap());
+                                // Iterate through alerts and render them
+                                for (idx, alert) in alert_iter {
+                                    let mut new_alert = alert
+                                        .clone()
+                                        .inner_margin(self.inner_margin)
+                                        .outer_margin(self.outer_margin)
+                                        .corner_radius(self.corner_radius)
+                                        .can_close(self.can_close);
+                                    if self.width.is_some() {
+                                        new_alert = new_alert.width(self.width.unwrap());
+                                    }
+                                    let resp = ui.add(new_alert);
+                                    if self.can_close && resp.clicked() {
+                                        to_remove.push(idx);
+                                    }
                                 }
-                                let resp = ui.add(alert);
-                                if self.can_close && resp.clicked() {
-                                    to_remove.push(idx);
-                                }
-                            }
 
-                            // Remove closed alerts in reverse order to avoid index shifting issues
-                            for idx in to_remove.into_iter().rev() {
-                                self.alerts.remove(idx);
+                                // Remove closed alerts in reverse order to avoid index shifting issues
+                                for idx in to_remove.into_iter().rev() {
+                                    alerts.remove(idx);
+                                }
                             }
                         });
                     scroll_resp.inner
@@ -276,7 +284,7 @@ impl<'a> Widget for AlertManager<'a> {
 /// Convenience function to create an alert manager widget with a mutable vector of alerts.
 ///
 /// # Parameters
-/// - `alerts`: A mutable reference to a vector of `(AlertLevel, String)` tuples representing the current alerts.
+/// - `alerts`: A mutable reference to a vector of `Alert` tuples representing the current alerts.
 ///
 /// # Returns
 /// Returns an `AlertManager` instance configured with the provided alerts.
@@ -288,9 +296,6 @@ impl<'a> Widget for AlertManager<'a> {
 /// ui.add(egui_widget_ext::alert_manager(&mut alerts, "example_alerts"));
 /// # });
 /// ```
-pub fn alert_manager<'a>(
-    alerts: &'a mut Vec<(AlertLevel, String)>,
-    unique_key: &str,
-) -> AlertManager<'a> {
+pub fn alert_manager<'a>(alerts: &'a mut Mutex<Vec<Alert>>, unique_key: &str) -> AlertManager<'a> {
     AlertManager::new(alerts, unique_key)
 }

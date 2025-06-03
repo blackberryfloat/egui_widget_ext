@@ -14,14 +14,16 @@
 //!
 //! This will open a window demonstrating the alert manager's capabilities.
 
+use std::sync::Mutex;
+
 use eframe::egui;
 use egui::{Align2, CentralPanel, Pos2, SidePanel, TopBottomPanel};
-use egui_widget_ext::{AlertLevel, AlertManager};
+use egui_widget_ext::{Alert, AlertLevel, AlertManager};
 
 /// Main application struct for the Alert Manager demo.
 struct AlertManagerApp {
     /// List of alerts to be managed by the AlertManager.
-    alerts: Vec<(AlertLevel, String)>,
+    alerts: Mutex<Vec<Alert>>,
     /// Current anchor position for the alert manager.
     anchor: Align2,
     /// Whether the side panel for alerts is currently shown.
@@ -34,7 +36,7 @@ impl Default for AlertManagerApp {
     /// Provides default values for the app state.
     fn default() -> Self {
         Self {
-            alerts: vec![],             // Start with no alerts
+            alerts: Mutex::new(vec![]), // Start with no alerts
             anchor: Align2::CENTER_TOP, // Default anchor
             show_side_panel: false,     // Side panel hidden by default
             alert_width: None,          // Default: not set
@@ -56,40 +58,50 @@ impl eframe::App for AlertManagerApp {
             ui.horizontal(|ui| {
                 if ui.button("Anchor: Top Center").clicked() {
                     self.anchor = Align2::CENTER_TOP;
-                    self.alerts
-                        .push((AlertLevel::Info, "Anchored to Top Center".into()));
+                    self.alerts.try_lock().unwrap().push(
+                        Alert::new("Anchored to Top Center".into()).with_level(AlertLevel::Info),
+                    );
                 }
                 if ui.button("Anchor: Bottom Center").clicked() {
                     self.anchor = Align2::CENTER_BOTTOM;
-                    self.alerts
-                        .push((AlertLevel::Warning, "Anchored to Bottom Center".into()));
+                    self.alerts.try_lock().unwrap().push(
+                        Alert::new("Anchored to Bottom Center".into())
+                            .with_level(AlertLevel::Warning),
+                    );
                 }
                 if ui.button("Anchor: Top Left").clicked() {
                     self.anchor = Align2::LEFT_TOP;
-                    self.alerts
-                        .push((AlertLevel::Error, "Anchored to Top Left".into()));
+                    self.alerts.try_lock().unwrap().push(
+                        Alert::new("Anchored to Top Left".into()).with_level(AlertLevel::Error),
+                    );
                 }
                 if ui.button("Anchor: Bottom Right").clicked() {
                     self.anchor = Align2::RIGHT_BOTTOM;
-                    self.alerts
-                        .push((AlertLevel::Success, "Anchored to Bottom Right".into()));
+                    self.alerts.try_lock().unwrap().push(
+                        Alert::new("Anchored to Bottom Right".into())
+                            .with_level(AlertLevel::Success),
+                    );
                 }
                 if ui.button("Toggle Side Panel Alerts").clicked() {
                     self.show_side_panel = !self.show_side_panel;
                     if self.show_side_panel {
-                        self.alerts
-                            .push((AlertLevel::Info, "Side panel alerts enabled!".into()));
+                        self.alerts.try_lock().unwrap().push(
+                            Alert::new("Side panel alerts enabled!".into())
+                                .with_level(AlertLevel::Info),
+                        );
                     } else {
-                        self.alerts
-                            .push((AlertLevel::Warning, "Side panel alerts disabled!".into()));
+                        self.alerts.try_lock().unwrap().push(
+                            Alert::new("Side panel alerts disabled!".into())
+                                .with_level(AlertLevel::Warning),
+                        );
                     }
                 }
                 if ui.button("Add Many Alerts").clicked() {
                     for i in 0..10 {
-                        self.alerts.push((
-                            AlertLevel::Info,
-                            format!("Bulk alert #{} (scroll to see more)", i),
-                        ));
+                        self.alerts.try_lock().unwrap().push(
+                            Alert::new(&format!("Bulk alert #{} (scroll to see more)", i))
+                                .with_level(AlertLevel::Info),
+                        );
                     }
                 }
             });
@@ -104,19 +116,16 @@ impl eframe::App for AlertManagerApp {
                 }
                 if ui.button("Set Alert Width").clicked() {
                     self.alert_width = Some(width);
-                    self.alerts.insert(
-                        0,
-                        (AlertLevel::Info, format!("Alert width set to {:.0}", width)),
+                    self.alerts.try_lock().unwrap().push(
+                        Alert::new(&format!("Alert width set to {:.0}", width))
+                            .with_level(AlertLevel::Info),
                     );
                 }
                 if ui.button("Clear Width").clicked() {
                     self.alert_width = None;
-                    self.alerts.insert(
-                        0,
-                        (
-                            AlertLevel::Info,
-                            "Alert width cleared (using default)".into(),
-                        ),
+                    self.alerts.try_lock().unwrap().push(
+                        Alert::new("Alert width cleared (using default)")
+                            .with_level(AlertLevel::Info),
                     );
                 }
                 if let Some(w) = self.alert_width {
@@ -134,7 +143,9 @@ impl eframe::App for AlertManagerApp {
                 ui.heading("Side Panel");
                 if ui.button("Add Side Alert").clicked() {
                     self.alerts
-                        .push((AlertLevel::Warning, "Alert in side panel!".into()));
+                        .try_lock()
+                        .unwrap()
+                        .push(Alert::new("Alert in side panel!").with_level(AlertLevel::Warning));
                 }
                 let mut manager = AlertManager::new(&mut self.alerts, "side_panel")
                     .anchor(Align2::LEFT_TOP)

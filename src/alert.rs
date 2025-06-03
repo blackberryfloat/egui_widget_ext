@@ -19,6 +19,8 @@
 //! - [`Alert`]: Struct for configuring and displaying the alert widget.
 //! - [`alert`]: Convenience function for creating an alert widget.
 
+use std::hash::Hash;
+
 use egui::{Button, Color32, CornerRadius, Frame, Label, Margin, RichText, Stroke, Ui, Widget};
 
 /// Represents the severity level of an alert. Determines the background color and semantic meaning
@@ -63,6 +65,19 @@ pub struct Alert {
     can_close: bool,
     /// Optional width constraint for the alert box.
     width: Option<f32>,
+}
+
+impl Hash for Alert {
+    /// Hash the alert's properties to ensure consistent behavior in hash maps and sets.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.color.hash(state);
+        self.message.hash(state);
+        self.inner_margin.hash(state);
+        self.outer_margin.hash(state);
+        self.corner_radius.hash(state);
+        self.can_close.hash(state);
+        self.width.unwrap_or(-1.0).to_bits().hash(state);
+    }
 }
 
 impl Default for Alert {
