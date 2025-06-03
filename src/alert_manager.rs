@@ -48,6 +48,7 @@
 //! `(AlertLevel, String)`. You can push new alerts to the vector at any time, and they will be displayed
 //! until dismissed by the user.
 
+use core::hash;
 use egui::{Align2, Id, Order, ScrollArea, Ui, Vec2, Widget};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -183,13 +184,13 @@ impl<'a> Widget for AlertManager<'a> {
     fn ui(self, ui: &mut Ui) -> egui::Response {
         let parent_area = ui.max_rect();
         let mut to_remove = Vec::new();
-        let id: Id = Id::new(self.unique_key.clone());
+        let hasher_id = Id::new(format!("alert_manager_hash_{}", self.unique_key));
         let mut hasher = DefaultHasher::new();
         self.hash(&mut hasher);
         let hash = hasher.finish();
-        let old_hash = ui.ctx().memory(|mem| mem.data.get_temp::<u64>(id));
+        let old_hash = ui.ctx().memory(|mem| mem.data.get_temp::<u64>(hasher_id));
         ui.ctx().memory_mut(|mem| {
-            mem.data.insert_temp(id, hash);
+            mem.data.insert_temp(hasher_id, hash);
         });
 
         // Determine best size limits
@@ -203,6 +204,7 @@ impl<'a> Widget for AlertManager<'a> {
             .clamp(1.0, parent_area.width());
 
         // Create floating area for the alert manager
+        let id: Id = Id::new(self.unique_key.clone());
         egui::Area::new(id)
             .order(Order::Foreground)
             .anchor(self.anchor, self.anchor_offset.unwrap_or(Vec2::ZERO))
