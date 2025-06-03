@@ -16,10 +16,11 @@ use eframe::egui;
 use egui::{CentralPanel, TopBottomPanel};
 use egui_widget_ext::{Toast, ToastManager};
 use std::collections::VecDeque;
+use std::sync::Mutex;
 
 struct ToastManagerApp {
     /// List of toasts to be managed by the ToastManager.
-    toasts: VecDeque<Toast>,
+    toasts: Mutex<VecDeque<Toast>>,
     /// Maximum number of toasts to display at once.
     max_toasts: usize,
     /// Anchor position for the toast area.
@@ -29,7 +30,7 @@ struct ToastManagerApp {
 impl Default for ToastManagerApp {
     fn default() -> Self {
         Self {
-            toasts: VecDeque::new(),
+            toasts: Mutex::new(VecDeque::new()),
             max_toasts: 4,
             anchor: egui::Align2::RIGHT_BOTTOM,
         }
@@ -48,23 +49,24 @@ impl eframe::App for ToastManagerApp {
         ctx.request_repaint_after(std::time::Duration::from_millis(100));
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            let mut toasts = self.toasts.lock().unwrap();
             ui.horizontal(|ui| {
                 if ui.button("Show Info Toast").clicked() {
-                    self.toasts.push_back(
+                    toasts.push_back(
                         Toast::new("This is an info toast!")
                             .with_color(egui::Color32::from_rgb(200, 200, 255))
                             .duration(std::time::Duration::from_secs(3)),
                     );
                 }
                 if ui.button("Show Success Toast").clicked() {
-                    self.toasts.push_back(
+                    toasts.push_back(
                         Toast::new("Success!")
                             .with_color(egui::Color32::LIGHT_GREEN)
                             .duration(std::time::Duration::from_secs(2)),
                     );
                 }
                 if ui.button("Show Error Toast").clicked() {
-                    self.toasts.push_back(
+                    toasts.push_back(
                         Toast::new("Something went wrong!")
                             .with_color(egui::Color32::LIGHT_RED)
                             .duration(std::time::Duration::from_secs(4)),
@@ -72,7 +74,7 @@ impl eframe::App for ToastManagerApp {
                 }
                 if ui.button("Show Many Toasts").clicked() {
                     for i in 0..5 {
-                        self.toasts.push_back(
+                        toasts.push_back(
                             Toast::new(&format!("Toast #{i}"))
                                 .duration(std::time::Duration::from_secs(2 + i)),
                         );

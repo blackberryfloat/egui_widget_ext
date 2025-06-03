@@ -22,6 +22,7 @@
 //!
 //! ## Example
 //! ```rust
+//! # use std::sync::Mutex;
 //! # use egui_widget_ext::{AlertManager, Alert};
 //! # use egui::{CentralPanel, Context};
 //! # fn ui_example(ctx: &Context, alerts: &mut Mutex<Vec<Alert>>) {
@@ -291,8 +292,10 @@ impl<'a> Widget for AlertManager<'a> {
 ///
 /// # Example
 /// ```
+/// # use std::sync::Mutex;
+/// # use egui_widget_ext::{alert_manager, Alert, AlertLevel};
 /// # egui::__run_test_ui(|ui| {
-/// # let mut alerts = vec![(egui_widget_ext::AlertLevel::Info, "Hello!".to_string())];
+/// # let mut alerts = Mutex::new(vec![Alert::new("Initial alert").with_level(AlertLevel::Info)]);
 /// ui.add(egui_widget_ext::alert_manager(&mut alerts, "example_alerts"));
 /// # });
 /// ```
