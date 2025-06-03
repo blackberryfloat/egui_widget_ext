@@ -6,7 +6,7 @@
 //!
 //! ## Usage
 //!
-//! The `AlertManager` takes a mutable reference to a `Mutex<Vec<Alert>>` representing the current
+//! The `AlertManager` takes a reference to a `Mutex<Vec<Alert>>` representing the current
 //! alerts to display. It provides builder-style methods to configure margins, corner radius, width, anchor
 //! alignment, custom position, anchor offset, and maximum height for the alert area. Each alert is rendered
 //! using the `Alert` widget, and closed alerts are automatically removed from the vector.
@@ -25,7 +25,7 @@
 //! # use std::sync::Mutex;
 //! # use egui_widget_ext::{AlertManager, Alert};
 //! # use egui::{CentralPanel, Context};
-//! # fn ui_example(ctx: &Context, alerts: &mut Mutex<Vec<Alert>>) {
+//! # fn ui_example(ctx: &Context, alerts: &Mutex<Vec<Alert>>) {
 //! CentralPanel::default().show(ctx, |ui| {
 //!     ui.add(AlertManager::new(alerts, "main")
 //!         .corner_radius(8)
@@ -61,7 +61,7 @@ pub struct AlertManager<'a> {
     /// Unique key for the alert manager instance (used for state management).
     pub unique_key: String,
     /// List of alerts as (level, message) tuples.
-    pub alerts: &'a mut Mutex<Vec<Alert>>,
+    pub alerts: &'a Mutex<Vec<Alert>>,
     /// Default inner margin for alerts.
     pub inner_margin: i8,
     /// Default outer margin for alerts.
@@ -104,7 +104,7 @@ impl Hash for AlertManager<'_> {
 
 impl<'a> AlertManager<'a> {
     /// Create a new alert manager with a reference to a list of alerts.
-    pub fn new(alerts: &'a mut Mutex<Vec<Alert>>, unique_key: &str) -> Self {
+    pub fn new(alerts: &'a Mutex<Vec<Alert>>, unique_key: &str) -> Self {
         Self {
             unique_key: format!("alert_manager_{}", unique_key),
             alerts,
@@ -299,6 +299,6 @@ impl<'a> Widget for AlertManager<'a> {
 /// ui.add(egui_widget_ext::alert_manager(&mut alerts, "example_alerts"));
 /// # });
 /// ```
-pub fn alert_manager<'a>(alerts: &'a mut Mutex<Vec<Alert>>, unique_key: &str) -> AlertManager<'a> {
+pub fn alert_manager<'a>(alerts: &'a Mutex<Vec<Alert>>, unique_key: &str) -> AlertManager<'a> {
     AlertManager::new(alerts, unique_key)
 }

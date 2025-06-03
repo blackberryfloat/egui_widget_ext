@@ -151,6 +151,11 @@ impl Alert {
             AlertLevel::Error => Color32::LIGHT_RED,
         }
     }
+
+    /// Expose alert message for external access.
+    pub fn get_message(&self) -> &str {
+        &self.message
+    }
 }
 
 impl Widget for Alert {

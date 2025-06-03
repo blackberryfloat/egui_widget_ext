@@ -6,7 +6,7 @@
 //!
 //! ## Usage
 //!
-//! The `ToastManager` takes a mutable reference to a `Mutex<VecDeque<Toast>>` representing the current
+//! The `ToastManager` takes a reference to a `Mutex<VecDeque<Toast>>` representing the current
 //! toasts to display. The widget provides builder-style methods to configure the maximum number of
 //! toasts, margins, corner radius, width, anchor alignment, and anchor offset. Each toast is
 //! rendered using the `Toast` widget trait. All anchor positions are relative to the screen, and
@@ -43,9 +43,9 @@
 //!         .duration(std::time::Duration::from_secs(5)),
 //! ]));
 //! // Add a manager that allows up to 3 toasts at once
-//! ui.add(ToastManager::new(&mut toasts, "main").max_toasts(3));
+//! ui.add(ToastManager::new(&toasts, "main").max_toasts(3));
 //! // Add a separate manager using the convenience function
-//! ui.add(toast_manager(&mut toasts, "main1"));
+//! ui.add(toast_manager(&toasts, "main1"));
 //! # }
 //! ```
 //!
@@ -77,7 +77,7 @@ pub struct ToastManager<'a> {
     unique_key: String,
     /// Mutable reference to the deque of toasts, where each toast is a tuple of (message, duration).
     /// A reference is used so this content can be easily hoisted to a higher scope if desired.
-    toasts: &'a mut Mutex<VecDeque<Toast>>,
+    toasts: &'a Mutex<VecDeque<Toast>>,
     /// Maximum number of toasts to display at once.
     max_toasts: usize,
     /// Inner margin (padding) for the toast area.
@@ -95,7 +95,7 @@ pub struct ToastManager<'a> {
 }
 
 impl<'a> ToastManager<'a> {
-    pub fn new(toasts: &'a mut Mutex<VecDeque<Toast>>, unique_key: &str) -> Self {
+    pub fn new(toasts: &'a Mutex<VecDeque<Toast>>, unique_key: &str) -> Self {
         Self {
             unique_key: format!("toast_manager_{}", unique_key),
             toasts,
@@ -229,12 +229,9 @@ impl<'a> Widget for ToastManager<'a> {
 /// # use egui_widget_ext::{ToastManager, toast, toast_manager};
 /// # egui::__run_test_ui(|ui| {
 /// let mut toasts = Mutex::new(VecDeque::from([toast("Hello, World!")]));
-/// ui.add(toast_manager(&mut toasts, "main"));
+/// ui.add(toast_manager(&toasts, "main"));
 /// # });
 /// ```
-pub fn toast_manager<'a>(
-    toasts: &'a mut Mutex<VecDeque<Toast>>,
-    unique_key: &str,
-) -> ToastManager<'a> {
+pub fn toast_manager<'a>(toasts: &'a Mutex<VecDeque<Toast>>, unique_key: &str) -> ToastManager<'a> {
     ToastManager::new(toasts, unique_key)
 }
