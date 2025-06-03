@@ -187,7 +187,7 @@ impl Widget for Alert {
 /// - `message`: The message to display inside the alert box.
 ///
 /// # Returns
-/// Returns an [`egui::Widget`] closure. When invoked, it returns an [`egui::Response`] for the alert box.
+/// Returns an [`Alert`] widget configured with the specified level and message.
 ///
 /// # Example
 /// ```
@@ -198,6 +198,6 @@ impl Widget for Alert {
 /// });
 /// # });
 /// ```
-pub fn alert(level: AlertLevel, message: &str) -> impl Widget + '_ {
-    move |ui: &mut Ui| ui.add(Alert::new(message).with_level(level))
+pub fn alert(level: AlertLevel, message: &str) -> Alert {
+    Alert::new(message).with_level(level)
 }

@@ -18,7 +18,8 @@ toggle_switch=[]
 alert=[]
 alert_manager=["alert"]
 toast=[]
-all = ["alert_manager", "alert", "toggle_switch", "toast"]
+toast_manager=["toast"]
+all = ["alert_manager", "alert", "toggle_switch", "toast_manager", "toast"]
 
 [dev-dependencies]
 eframe = "0.31.1"
