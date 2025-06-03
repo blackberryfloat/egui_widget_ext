@@ -1,23 +1,27 @@
 //! # Toast Widget Module
 //!
-//! This module provides a customizable toast notification widget for use with the `egui` GUI library.
-//! Toasts are transient messages that appear for a short duration and then disappear automatically.
-//! They are useful for providing non-intrusive feedback to users, such as success messages, warnings, or errors.
+//! This module provides a customizable toast notification widget for use with the `egui` GUI
+//! library. Toasts are transient messages that appear for a short duration and then disappear
+//! automatically. They are useful for providing non-intrusive feedback to users, such as success
+//! messages.
 //!
 //! ## Usage
 //!
-//! The [`Toast`] struct allows you to configure the appearance, message, color, margins, corner radius, width, and duration of the toast.
-//! You can use the [`toast`] convenience function for a quick way to create a toast with a message.
+//! The [`Toast`] struct allows you to configure the appearance, message, color, margins, corner
+//! radius, width, and duration of the toast. You can use the [`toast`] convenience function for a
+//! quick way to create a toast with a message.
 //!
 //! **Important:**  
-//! Toasts rely on timeouts to disappear after a set duration. To ensure that the toast expires and disappears at the correct time,
-//! you should call `ctx.request_repaint_after(std::time::Duration::from_secs(1));` (or a similar interval) in your egui update loop.
-//! This ensures that egui continues to repaint even if there is no user interaction, allowing the toast to update and expire as expected.
+//! Toasts rely on timeouts to disappear after a set duration. To ensure that the toast expires and
+//! disappears at the correct time, you should call
+//! `ctx.request_repaint_after(std::time::Duration::from_secs(1));` (or a similar interval) in your
+//! egui update loop. This ensures that egui continues to repaint even if there is no user
+//! interaction, allowing the toast to update and expire as expected.
 //!
 //! ## Example
 //! ```
 //! # egui::__run_test_ui(|ui| {
-//! use egui_widget_ext::Toast;
+//! use egui_widget_ext::{Toast, toast};
 //! use egui::Color32;
 //! use std::time::Duration;
 //!
@@ -30,6 +34,9 @@
 //!     .width(300.0)
 //!     .duration(Duration::from_secs(5));
 //! ui.add(custom_toast);
+//!
+//! // Using the convenience function
+//! ui.add(toast("This is a default toast!"));
 //! # });
 //! ```
 //!
@@ -47,7 +54,7 @@ use egui::{Color32, CornerRadius, Frame, Label, Margin, Response, RichText, Stro
 /// It supports setting the background color, message, inner and outer margins, corner radius, width,
 /// and the duration for which the toast should be visible. Toasts are intended to be temporary and
 /// will expire after the specified duration.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Toast {
     /// The message to display in the toast.
     pub message: String,
@@ -73,7 +80,7 @@ impl Default for Toast {
             message: "No message provided".to_string(),
             color: Color32::from_rgb(200, 200, 255), // Default to a blue color
             inner_margin: 10,
-            outer_margin: 10,
+            outer_margin: 1,
             corner_radius: 4,
             width: None,                      // Default to no specific width
             start_instant: Instant::now(),    // Start timing immediately
@@ -162,4 +169,23 @@ impl Widget for Toast {
             .inner;
         response
     }
+}
+
+/// Convenience function to create a toast with a message and default settings.
+///
+/// # Arguments
+/// - `message`: The message to display in the toast.
+///
+/// # Returns
+/// A new `Toast` instance with the specified message and default settings.
+///
+/// # Example
+/// ```
+/// # egui::__run_test_ui(|ui| {
+/// use egui_widget_ext::{toast};
+/// ui.add(toast("Success!"));
+/// # });
+/// ```
+pub fn toast(message: &str) -> Toast {
+    Toast::new(message)
 }
