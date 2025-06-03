@@ -54,7 +54,7 @@ use egui::{Color32, CornerRadius, Frame, Label, Margin, Response, RichText, Stro
 /// It supports setting the background color, message, inner and outer margins, corner radius, width,
 /// and the duration for which the toast should be visible. Toasts are intended to be temporary and
 /// will expire after the specified duration.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Toast {
     /// The message to display in the toast.
     pub message: String,
