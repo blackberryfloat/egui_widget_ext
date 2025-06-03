@@ -44,7 +44,7 @@
 //! // Add a manager that allows up to 3 toasts at once
 //! ui.add(ToastManager::new(&mut toasts, "main").max_toasts(3));
 //! // Add a separate manager using the convenience function
-//! ui.add(toast_manager(&mut toasts));
+//! ui.add(toast_manager(&mut toasts, "main1"));
 //! # }
 //! ```
 //!
@@ -218,9 +218,12 @@ impl<'a> Widget for ToastManager<'a> {
 /// ```
 /// # egui::__run_test_ui(|ui| {
 /// # let mut toasts = VecDeque::from([(String::from("Hello!"), 2.0)]);
-/// ui.add(egui_widget_ext::toast_manager(&mut toasts));
+/// ui.add(egui_widget_ext::toast_manager(&mut toasts, "main"));
 /// # });
 /// ```
-pub fn toast_manager<'a>(toasts: &'a mut std::collections::VecDeque<Toast>) -> ToastManager<'a> {
-    ToastManager::new(toasts, "main")
+pub fn toast_manager<'a>(
+    toasts: &'a mut std::collections::VecDeque<Toast>,
+    unique_key: &str,
+) -> ToastManager<'a> {
+    ToastManager::new(toasts, unique_key)
 }

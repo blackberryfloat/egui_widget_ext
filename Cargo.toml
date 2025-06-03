@@ -11,7 +11,8 @@ keywords = ["egui", "widget", "gui", "ui", "extension"]
 documentation = "https://docs.rs/egui_widget_ext"
 
 [dependencies]
-egui = "0.31.1"
+# egui = "0.31.1"
+egui = { git = "https://github.com/blackberryfloat/egui.git", branch = "wm/allow-memory-removal"}
 
 [features]
 toggle_switch=[]
@@ -20,6 +21,9 @@ alert_manager=["alert"]
 toast=[]
 toast_manager=["toast"]
 all = ["alert_manager", "alert", "toggle_switch", "toast_manager", "toast"]
+
+[patch.crates-io]
+egui = { git = "https://github.com/blackberryfloat/egui.git", branch = "wm/allow-memory-removal" }
 
 [dev-dependencies]
 eframe = "0.31.1"

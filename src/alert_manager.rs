@@ -81,6 +81,24 @@ pub struct AlertManager<'a> {
     pub max_height: Option<f32>,
 }
 
+impl Hash for AlertManager<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.unique_key.hash(state);
+        self.alerts.hash(state);
+        self.inner_margin.hash(state);
+        self.outer_margin.hash(state);
+        self.corner_radius.hash(state);
+        self.width.unwrap_or(-1.0).to_bits().hash(state);
+        self.can_close.hash(state);
+        self.anchor.hash(state);
+        self.anchor_offset
+            .unwrap_or(Vec2::ZERO)
+            .to_string()
+            .hash(state);
+        self.max_height.unwrap_or(-1.0).to_bits().hash(state); // Use to_bits for f32
+    }
+}
+
 impl<'a> AlertManager<'a> {
     /// Create a new alert manager with a reference to a list of alerts.
     pub fn new(alerts: &'a mut Vec<(AlertLevel, String)>, unique_key: &str) -> Self {
@@ -165,29 +183,24 @@ impl<'a> Widget for AlertManager<'a> {
     fn ui(self, ui: &mut Ui) -> egui::Response {
         let parent_area = ui.max_rect();
         let mut to_remove = Vec::new();
-
-        // Generate a unique area for unique alert manager data
-        // TODO: this is probably a memory leak but alerts should not be high frequency
+        let id: Id = Id::new(self.unique_key.clone());
         let mut hasher = DefaultHasher::new();
-        self.alerts.hash(&mut hasher);
-        let alerts_hash = hasher.finish();
-        let id: Id = Id::new(format!(
-            "{}_{}_{}_{}",
-            self.unique_key,
-            self.width.unwrap_or(-1.0),
-            self.max_height.unwrap_or(-1.0),
-            alerts_hash
-        ));
+        self.hash(&mut hasher);
+        let hash = hasher.finish();
+        let old_hash = ui.ctx().memory(|mem| mem.data.get_temp::<u64>(id));
+        ui.ctx().memory_mut(|mem| {
+            mem.data.insert_temp(id, hash);
+        });
 
         // Determine best size limits
         let max_height = self
             .max_height
             .unwrap_or(parent_area.height())
-            .min(parent_area.height());
+            .clamp(1.0, parent_area.height());
         let max_width = self
             .width
             .unwrap_or(parent_area.width())
-            .min(parent_area.width());
+            .clamp(1.0, parent_area.width());
 
         // Create floating area for the alert manager
         egui::Area::new(id)
@@ -195,6 +208,7 @@ impl<'a> Widget for AlertManager<'a> {
             .anchor(self.anchor, self.anchor_offset.unwrap_or(Vec2::ZERO))
             .constrain_to(parent_area)
             .default_size(Vec2::new(max_width, max_height))
+            .force_resize_to_content(old_hash.is_some() && old_hash.unwrap() != hash)
             .show(ui.ctx(), |ui| {
                 if !ui.is_enabled() && !ui.is_visible() {
                     // Detect sizing pass: do not use ScrollArea since that will hide the content size
@@ -267,15 +281,18 @@ impl<'a> Widget for AlertManager<'a> {
 /// - `alerts`: A mutable reference to a vector of `(AlertLevel, String)` tuples representing the current alerts.
 ///
 /// # Returns
-/// Returns an [`egui::Widget`] closure. When invoked, it returns an [`egui::Response`] for the alert manager area.
+/// Returns an `AlertManager` instance configured with the provided alerts.
 ///
 /// # Example
 /// ```
 /// # egui::__run_test_ui(|ui| {
 /// # let mut alerts = vec![(egui_widget_ext::AlertLevel::Info, "Hello!".to_string())];
-/// ui.add(egui_widget_ext::alert_manager(&mut alerts));
+/// ui.add(egui_widget_ext::alert_manager(&mut alerts, "example_alerts"));
 /// # });
 /// ```
-pub fn alert_manager<'a>(alerts: &'a mut Vec<(AlertLevel, String)>) -> impl Widget + 'a {
-    move |ui: &mut Ui| AlertManager::new(alerts, "main").ui(ui)
+pub fn alert_manager<'a>(
+    alerts: &'a mut Vec<(AlertLevel, String)>,
+    unique_key: &str,
+) -> AlertManager<'a> {
+    AlertManager::new(alerts, unique_key)
 }
