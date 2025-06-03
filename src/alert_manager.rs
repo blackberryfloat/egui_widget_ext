@@ -48,15 +48,11 @@
 //! `(AlertLevel, String)`. You can push new alerts to the vector at any time, and they will be displayed
 //! until dismissed by the user.
 
-use egui::{Align2, Id, Order, ScrollArea, Ui, Vec2, Widget, WidgetWithState};
+use egui::{Align2, Id, Order, ScrollArea, Ui, Vec2, Widget};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use crate::{Alert, AlertLevel};
-
-pub struct AlertManagerState {
-    pub alerts_rect: egui::Rect,
-}
 
 /// Manages and displays a list of alerts with shared styling and positioning.
 ///
@@ -165,10 +161,6 @@ impl<'a> AlertManager<'a> {
     }
 }
 
-impl<'a> WidgetWithState for AlertManager<'a> {
-    type State = AlertManagerState;
-}
-
 impl<'a> Widget for AlertManager<'a> {
     fn ui(self, ui: &mut Ui) -> egui::Response {
         let parent_area = ui.max_rect();
@@ -233,9 +225,11 @@ impl<'a> Widget for AlertManager<'a> {
                             let alert_iter: Box<
                                 dyn Iterator<Item = (usize, &(AlertLevel, String))>,
                             > = if is_bottom {
-                                Box::new(self.alerts.iter().enumerate().rev())
-                            } else {
+                                // FIFO order for bottom anchor so newest alerts appear at the bottom
                                 Box::new(self.alerts.iter().enumerate())
+                            } else {
+                                // LIFO order for top anchor so newest alerts appear at the top
+                                Box::new(self.alerts.iter().enumerate().rev())
                             };
 
                             // Iterate through alerts and render them

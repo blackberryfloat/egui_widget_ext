@@ -57,44 +57,39 @@ impl eframe::App for AlertManagerApp {
                 if ui.button("Anchor: Top Center").clicked() {
                     self.anchor = Align2::CENTER_TOP;
                     self.alerts
-                        .insert(0, (AlertLevel::Info, "Anchored to Top Center".into()));
+                        .push((AlertLevel::Info, "Anchored to Top Center".into()));
                 }
                 if ui.button("Anchor: Bottom Center").clicked() {
                     self.anchor = Align2::CENTER_BOTTOM;
                     self.alerts
-                        .insert(0, (AlertLevel::Warning, "Anchored to Bottom Center".into()));
+                        .push((AlertLevel::Warning, "Anchored to Bottom Center".into()));
                 }
                 if ui.button("Anchor: Top Left").clicked() {
                     self.anchor = Align2::LEFT_TOP;
                     self.alerts
-                        .insert(0, (AlertLevel::Error, "Anchored to Top Left".into()));
+                        .push((AlertLevel::Error, "Anchored to Top Left".into()));
                 }
                 if ui.button("Anchor: Bottom Right").clicked() {
                     self.anchor = Align2::RIGHT_BOTTOM;
                     self.alerts
-                        .insert(0, (AlertLevel::Success, "Anchored to Bottom Right".into()));
+                        .push((AlertLevel::Success, "Anchored to Bottom Right".into()));
                 }
                 if ui.button("Toggle Side Panel Alerts").clicked() {
                     self.show_side_panel = !self.show_side_panel;
                     if self.show_side_panel {
                         self.alerts
-                            .insert(0, (AlertLevel::Info, "Side panel alerts enabled!".into()));
+                            .push((AlertLevel::Info, "Side panel alerts enabled!".into()));
                     } else {
-                        self.alerts.insert(
-                            0,
-                            (AlertLevel::Warning, "Side panel alerts disabled!".into()),
-                        );
+                        self.alerts
+                            .push((AlertLevel::Warning, "Side panel alerts disabled!".into()));
                     }
                 }
                 if ui.button("Add Many Alerts").clicked() {
                     for i in 0..10 {
-                        self.alerts.insert(
-                            0,
-                            (
-                                AlertLevel::Info,
-                                format!("Bulk alert #{i} (scroll to see more)"),
-                            ),
-                        );
+                        self.alerts.push((
+                            AlertLevel::Info,
+                            format!("Bulk alert #{} (scroll to see more)", i),
+                        ));
                     }
                 }
             });
