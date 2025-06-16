@@ -11,8 +11,7 @@ keywords = ["egui", "widget", "gui", "ui", "extension"]
 documentation = "https://docs.rs/egui_widget_ext"
 
 [dependencies]
-# egui = "0.31.1"
-egui = { git = "https://github.com/blackberryfloat/egui.git", branch = "wm/allow-memory-removal"}
+egui = "0.31.1"
 
 [features]
 toggle_switch=[]
