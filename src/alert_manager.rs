@@ -212,7 +212,7 @@ impl<'a> Widget for AlertManager<'a> {
             .anchor(self.anchor, self.anchor_offset.unwrap_or(Vec2::ZERO))
             .constrain_to(parent_area)
             .default_size(Vec2::new(max_width, max_height))
-            .force_resize_to_content(old_hash.is_some() && old_hash.unwrap() != hash)
+            .sizing_pass(old_hash.is_some() && old_hash.unwrap() != hash)
             .show(ui.ctx(), |ui| {
                 if !ui.is_enabled() && !ui.is_visible() {
                     // Detect sizing pass: do not use ScrollArea since that will hide the content size
