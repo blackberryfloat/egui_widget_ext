@@ -22,7 +22,7 @@ toast_manager=["toast"]
 all = ["alert_manager", "alert", "toggle_switch", "toast_manager", "toast"]
 
 [patch.crates-io]
-egui = { git = "https://github.com/blackberryfloat/egui.git", branch = "wm/allow-memory-removal" }
+egui = { git = "https://github.com/blackberryfloat/egui.git", branch = "wm/stable-area-sizing-pass" }
 
 [dev-dependencies]
 eframe = "0.31.1"

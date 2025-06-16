@@ -25,18 +25,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3d3b8f9bae46a948369bc4a03e815d4ed6d616bd00de4051133a5019dc31c5a"
 
 [[package]]
-name = "accesskit"
-version = "0.19.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e25ae84c0260bdf5df07796d7cc4882460de26a2b406ec0e6c42461a723b271b"
-
-[[package]]
 name = "accesskit_atspi_common"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c5dd55e6e94949498698daf4d48fb5659e824d7abec0d394089656ceaf99d4f"
 dependencies = [
- "accesskit 0.17.1",
+ "accesskit",
  "accesskit_consumer",
  "atspi-common",
  "serde",
@@ -50,7 +44,7 @@ version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f47983a1084940ba9a39c077a8c63e55c619388be5476ac04c804cfbd1e63459"
 dependencies = [
- "accesskit 0.17.1",
+ "accesskit",
  "hashbrown",
  "immutable-chunkmap",
 ]
@@ -61,7 +55,7 @@ version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7329821f3bd1101e03a7d2e03bd339e3ac0dc64c70b4c9f9ae1949e3ba8dece1"
 dependencies = [
- "accesskit 0.17.1",
+ "accesskit",
  "accesskit_consumer",
  "hashbrown",
  "objc2 0.5.2",
@@ -75,7 +69,7 @@ version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcee751cc20d88678c33edaf9c07e8b693cd02819fe89053776f5313492273f5"
 dependencies = [
- "accesskit 0.17.1",
+ "accesskit",
  "accesskit_atspi_common",
  "async-channel",
  "async-executor",
@@ -93,7 +87,7 @@ version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24fcd5d23d70670992b823e735e859374d694a3d12bfd8dd32bd3bd8bedb5d81"
 dependencies = [
- "accesskit 0.17.1",
+ "accesskit",
  "accesskit_consumer",
  "hashbrown",
  "paste",
@@ -108,7 +102,7 @@ version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a6a48dad5530b6deb9fc7a52cc6c3bf72cdd9eb8157ac9d32d69f2427a5e879"
 dependencies = [
- "accesskit 0.17.1",
+ "accesskit",
  "accesskit_macos",
  "accesskit_unix",
  "accesskit_windows",
@@ -802,10 +796,10 @@ dependencies = [
 [[package]]
 name = "ecolor"
 version = "0.31.1"
-source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal#923757c1be0042b79b5b155d9e6fe93dda420f8d"
+source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass#68f4b72258f226960da2fcf92da1049e1748dd39"
 dependencies = [
  "bytemuck",
- "emath 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal)",
+ "emath 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass)",
 ]
 
 [[package]]
@@ -847,18 +841,16 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.31.1"
-source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal#923757c1be0042b79b5b155d9e6fe93dda420f8d"
+source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass#68f4b72258f226960da2fcf92da1049e1748dd39"
 dependencies = [
- "accesskit 0.19.0",
+ "accesskit",
  "ahash",
  "bitflags 2.9.1",
- "emath 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal)",
- "epaint 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal)",
+ "emath 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass)",
+ "epaint 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass)",
  "log",
  "nohash-hasher",
  "profiling",
- "smallvec",
- "unicode-segmentation",
 ]
 
 [[package]]
@@ -939,7 +931,7 @@ dependencies = [
 [[package]]
 name = "emath"
 version = "0.31.1"
-source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal#923757c1be0042b79b5b155d9e6fe93dda420f8d"
+source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass#68f4b72258f226960da2fcf92da1049e1748dd39"
 dependencies = [
  "bytemuck",
 ]
@@ -990,13 +982,13 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.31.1"
-source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal#923757c1be0042b79b5b155d9e6fe93dda420f8d"
+source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass#68f4b72258f226960da2fcf92da1049e1748dd39"
 dependencies = [
  "ab_glyph",
  "ahash",
  "bytemuck",
- "ecolor 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal)",
- "emath 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal)",
+ "ecolor 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass)",
+ "emath 0.31.1 (git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass)",
  "epaint_default_fonts",
  "log",
  "nohash-hasher",
@@ -1007,7 +999,7 @@ dependencies = [
 [[package]]
 name = "epaint_default_fonts"
 version = "0.31.1"
-source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fallow-memory-removal#923757c1be0042b79b5b155d9e6fe93dda420f8d"
+source = "git+https://github.com/blackberryfloat/egui.git?branch=wm%2Fstable-area-sizing-pass#68f4b72258f226960da2fcf92da1049e1748dd39"
 
 [[package]]
 name = "equivalent"
