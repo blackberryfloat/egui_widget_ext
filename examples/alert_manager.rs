@@ -147,7 +147,9 @@ impl eframe::App for AlertManagerApp {
                         .unwrap()
                         .push(Alert::new("Alert in side panel!").with_level(AlertLevel::Warning));
                 }
-                let mut manager = AlertManager::new(&mut self.alerts, "side_panel")
+                let mut alerts_guard = self.alerts.try_lock().unwrap();
+                let alerts = alerts_guard.as_mut();
+                let mut manager = AlertManager::new(alerts, "side_panel")
                     .anchor(Align2::LEFT_TOP)
                     .max_height(200.0);
                 if let Some(width) = self.alert_width {
@@ -175,7 +177,9 @@ impl eframe::App for AlertManagerApp {
             ui.heading("Alert Manager Demo");
             ui.label("Use the buttons above to trigger alerts in different positions.");
             if !self.show_side_panel {
-                let mut manager = AlertManager::new(&mut self.alerts, "main").anchor(self.anchor);
+                let mut alerts_guard = self.alerts.try_lock().unwrap();
+                let alerts = alerts_guard.as_mut();
+                let mut manager = AlertManager::new(alerts, "main").anchor(self.anchor);
                 if let Some(width) = self.alert_width {
                     manager = manager.width(width);
                 }

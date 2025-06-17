@@ -6,7 +6,7 @@
 //!
 //! ## Usage
 //!
-//! The `ToastManager` takes a reference to a `Mutex<VecDeque<Toast>>` representing the current
+//! The `ToastManager` takes a mutable reference to a `VecDeque<Toast>` representing the current
 //! toasts to display. The widget provides builder-style methods to configure the maximum number of
 //! toasts, margins, corner radius, width, anchor alignment, and anchor offset. Each toast is
 //! rendered using the `Toast` widget trait. All anchor positions are relative to the screen, and
@@ -25,28 +25,27 @@
 //!
 //! ## Example
 //! ```rust
-//! # use std::collections::VecDeque;
-//! # use std::sync::Mutex;
-//! # use egui_widget_ext::{ToastManager, Toast, toast, toast_manager};
-//! # fn ui_example(ui: &mut egui::Ui) {
-//! let mut toasts = Mutex::new(VecDeque::from([
-//!     // Convenience function to create a default toast
-//!     toast("Saved successfully!"),
-//!     toast("Error occurred"),
-//!     // Custom toast with specific styling
-//!     Toast::new("This is a custom toast!")
-//!         .with_color(egui::Color32::from_rgb(255, 200, 200))
-//!         .inner_margin(16)
-//!         .outer_margin(8)
-//!         .corner_radius(12)
-//!         .width(300.0)
-//!         .duration(std::time::Duration::from_secs(5)),
-//! ]));
-//! // Add a manager that allows up to 3 toasts at once
-//! ui.add(ToastManager::new(&toasts, "main").max_toasts(3));
-//! // Add a separate manager using the convenience function
-//! ui.add(toast_manager(&toasts, "main1"));
-//! # }
+//! use std::collections::VecDeque;
+//! use egui_widget_ext::{ToastManager, Toast, toast, toast_manager};
+//! fn ui_example(ui: &mut egui::Ui) {
+//!     let mut toasts = VecDeque::from([
+//!         // Convenience function to create a default toast
+//!         toast("Saved successfully!"),
+//!         toast("Error occurred"),
+//!         // Custom toast with specific styling
+//!         Toast::new("This is a custom toast!")
+//!             .with_color(egui::Color32::from_rgb(255, 200, 200))
+//!             .inner_margin(16)
+//!             .outer_margin(8)
+//!             .corner_radius(12)
+//!             .width(300.0)
+//!             .duration(std::time::Duration::from_secs(5)),
+//!     ]);
+//!     // Add a manager that allows up to 3 toasts at once
+//!     ui.add(ToastManager::new(&mut toasts, "main").max_toasts(3));
+//!     // Add a separate manager using the convenience function
+//!     ui.add(toast_manager(&mut toasts, "main1"));
+//! }
 //! ```
 //!
 //! ## Features
@@ -57,16 +56,15 @@
 //! - Each toast can have its own duration
 //!
 //! ## Note
-//! - The `ToastManager` widget is designed to use a mutable reference to a `Mutex<VecDeque<Toast>>`
-//! but manager settings are used to override the default appearance of all toasts.
-//! - A scroll area in not supported in this widget as toasts are typically transient and low
-//! volume at any given time.
-//! - the provided width is clamped to parent height if it exceeds the available space or 1.0 if it
-//! is less than 0.0. We use 1.0 to ensure something is shown to indicate that there are toasts.
+//! - The `ToastManager` widget is designed to use a mutable reference to a `VecDeque<Toast>`.
+//!   Manager settings are used to override the default appearance of all toasts.
+//! - A scroll area is not supported in this widget as toasts are typically transient and low
+//!   volume at any given time.
+//! - The provided width is clamped to parent height if it exceeds the available space or 1.0 if it
+//!   is less than 0.0. We use 1.0 to ensure something is shown to indicate that there are toasts.
 //!
 
 use std::collections::VecDeque;
-use std::sync::Mutex;
 
 use egui::Widget;
 
@@ -75,27 +73,19 @@ use crate::Toast;
 pub struct ToastManager<'a> {
     /// Unique key for the toast manager area, used to prevent conflicts with other areas.
     unique_key: String,
-    /// Mutable reference to the deque of toasts, where each toast is a tuple of (message, duration).
-    /// A reference is used so this content can be easily hoisted to a higher scope if desired.
-    toasts: &'a Mutex<VecDeque<Toast>>,
-    /// Maximum number of toasts to display at once.
+    /// Mutable reference to the deque of toasts.
+    toasts: &'a mut VecDeque<Toast>,
     max_toasts: usize,
-    /// Inner margin (padding) for the toast area.
     inner_margin: i8,
-    /// Outer margin for the toast area.
     outer_margin: i8,
-    /// Corner radius for the toast area.
     corner_radius: u8,
-    /// Width of the toast area.
     width: f32,
-    /// Anchor position for the toast area.
     anchor: egui::Align2,
-    /// Offset from the anchor position for the toast area.
     anchor_offset: egui::Vec2,
 }
 
 impl<'a> ToastManager<'a> {
-    pub fn new(toasts: &'a Mutex<VecDeque<Toast>>, unique_key: &str) -> Self {
+    pub fn new(toasts: &'a mut VecDeque<Toast>, unique_key: &str) -> Self {
         Self {
             unique_key: format!("toast_manager_{}", unique_key),
             toasts,
@@ -164,19 +154,12 @@ impl<'a> ToastManager<'a> {
 
 impl<'a> Widget for ToastManager<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let Ok(mut toasts_guard) = self.toasts.try_lock() else {
-            // If we can't lock the toasts, return an empty response
-            return ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover());
-        };
-        let toasts = &mut *toasts_guard;
-
         // Remove expired toasts
-        toasts.retain(|toast| !toast.has_expired());
+        self.toasts.retain(|toast| !toast.has_expired());
 
         // Ensure we don't exceed the maximum number of toasts
-        while toasts.len() > self.max_toasts {
-            // Remove the oldest toast if we exceed the limit
-            toasts.pop_front();
+        while self.toasts.len() > self.max_toasts {
+            self.toasts.pop_front();
         }
 
         let parent_area = ui.max_rect();
@@ -186,17 +169,15 @@ impl<'a> Widget for ToastManager<'a> {
             || self.anchor == egui::Align2::CENTER_BOTTOM;
 
         let toast_iter: Box<dyn Iterator<Item = &Toast>> = if is_bottom {
-            Box::new(toasts.iter()) // Show newest toasts at the top
+            Box::new(self.toasts.iter())
         } else {
-            Box::new(toasts.iter().rev()) // Show newest toasts at the top
+            Box::new(self.toasts.iter().rev())
         };
 
         egui::Area::new(egui::Id::new(self.unique_key))
             .anchor(self.anchor, self.anchor_offset)
             .show(ui.ctx(), |ui| {
-                // Create a vertical layout for the toasts
                 ui.vertical(|ui| {
-                    // Iterate over the toasts and display them
                     for toast in toast_iter {
                         let toast = toast
                             .clone()
@@ -204,7 +185,6 @@ impl<'a> Widget for ToastManager<'a> {
                             .outer_margin(self.outer_margin)
                             .corner_radius(self.corner_radius)
                             .width(width);
-
                         toast.ui(ui);
                     }
                 });
@@ -224,14 +204,13 @@ impl<'a> Widget for ToastManager<'a> {
 ///
 /// # Example
 /// ```
-/// # use std::collections::VecDeque;
-/// # use std::sync::Mutex;
-/// # use egui_widget_ext::{ToastManager, toast, toast_manager};
-/// # egui::__run_test_ui(|ui| {
-/// let mut toasts = Mutex::new(VecDeque::from([toast("Hello, World!")]));
-/// ui.add(toast_manager(&toasts, "main"));
-/// # });
+/// use std::collections::VecDeque;
+/// use egui_widget_ext::{ToastManager, toast, toast_manager};
+/// egui::__run_test_ui(|ui| {
+///     let mut toasts = VecDeque::from([toast("Hello, World!")]);
+///     ui.add(toast_manager(&mut toasts, "main"));
+/// });
 /// ```
-pub fn toast_manager<'a>(toasts: &'a Mutex<VecDeque<Toast>>, unique_key: &str) -> ToastManager<'a> {
+pub fn toast_manager<'a>(toasts: &'a mut VecDeque<Toast>, unique_key: &str) -> ToastManager<'a> {
     ToastManager::new(toasts, unique_key)
 }

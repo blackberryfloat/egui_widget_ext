@@ -16,6 +16,7 @@ use eframe::egui;
 use egui::{CentralPanel, TopBottomPanel};
 use egui_widget_ext::{Toast, ToastManager};
 use std::collections::VecDeque;
+use std::ops::DerefMut;
 use std::sync::Mutex;
 
 struct ToastManagerApp {
@@ -49,7 +50,8 @@ impl eframe::App for ToastManagerApp {
         ctx.request_repaint_after(std::time::Duration::from_millis(100));
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            let mut toasts = self.toasts.lock().unwrap();
+            let mut toasts_guard = self.toasts.try_lock().unwrap();
+            let toasts = toasts_guard.deref_mut();
             ui.horizontal(|ui| {
                 if ui.button("Show Info Toast").clicked() {
                     toasts.push_back(
@@ -114,8 +116,10 @@ impl eframe::App for ToastManagerApp {
                 "Use the buttons above to trigger toasts. Toasts will appear in the selected \
 anchor location and disappear automatically.",
             );
+            let mut toasts_guard = self.toasts.try_lock().unwrap();
+            let toasts = toasts_guard.deref_mut();
             ui.add(
-                ToastManager::new(&mut self.toasts, "main")
+                ToastManager::new(toasts, "main")
                     .max_toasts(self.max_toasts)
                     .anchor(self.anchor),
             );
