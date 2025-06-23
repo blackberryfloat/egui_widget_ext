@@ -57,28 +57,28 @@ impl eframe::App for ToastManagerApp {
                     toasts.push_back(
                         Toast::new("This is an info toast!")
                             .with_color(egui::Color32::from_rgb(200, 200, 255))
-                            .duration(std::time::Duration::from_secs(3)),
+                            .duration(chrono::Duration::seconds(3)),
                     );
                 }
                 if ui.button("Show Success Toast").clicked() {
                     toasts.push_back(
                         Toast::new("Success!")
                             .with_color(egui::Color32::LIGHT_GREEN)
-                            .duration(std::time::Duration::from_secs(2)),
+                            .duration(chrono::Duration::seconds(2)),
                     );
                 }
                 if ui.button("Show Error Toast").clicked() {
                     toasts.push_back(
                         Toast::new("Something went wrong!")
                             .with_color(egui::Color32::LIGHT_RED)
-                            .duration(std::time::Duration::from_secs(4)),
+                            .duration(chrono::Duration::seconds(4)),
                     );
                 }
                 if ui.button("Show Many Toasts").clicked() {
                     for i in 0..5 {
                         toasts.push_back(
                             Toast::new(&format!("Toast #{i}"))
-                                .duration(std::time::Duration::from_secs(2 + i)),
+                                .duration(chrono::Duration::seconds(2 + i)),
                         );
                     }
                 }

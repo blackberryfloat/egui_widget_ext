@@ -12,6 +12,7 @@ documentation = "https://docs.rs/egui_widget_ext"
 
 [dependencies]
 egui = "0.31.1"
+chrono = { version = "0.4", features = ["wasmbind", "serde"] }
 
 [features]
 toggle_switch=[]

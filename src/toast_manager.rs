@@ -39,7 +39,7 @@
 //!             .outer_margin(8)
 //!             .corner_radius(12)
 //!             .width(300.0)
-//!             .duration(std::time::Duration::from_secs(5)),
+//!             .duration(chrono::Duration::seconds(5)),
 //!     ]);
 //!     // Add a manager that allows up to 3 toasts at once
 //!     ui.add(ToastManager::new(&mut toasts, "main").max_toasts(3));
