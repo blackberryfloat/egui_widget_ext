@@ -22,7 +22,6 @@ struct AlertsApp {
     state: AppState,
 }
 
-#[derive(Default)]
 struct AppState {
     show_error: bool,
     show_error_long: bool,
@@ -32,6 +31,21 @@ struct AppState {
     show_info_long: bool,
     show_success: bool,
     show_success_long: bool,
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self {
+            show_error: true,
+            show_error_long: true,
+            show_warning: true,
+            show_warning_long: true,
+            show_info: true,
+            show_info_long: true,
+            show_success: true,
+            show_success_long: true,
+        }
+    }
 }
 
 impl AlertsApp {

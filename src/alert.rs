@@ -51,6 +51,8 @@ pub enum AlertLevel {
 /// Use the [`alert`] function for a convenient way to create an alert with a given level and message.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Alert {
+    /// The severity level of the alert.
+    level: AlertLevel,
     /// The background color of the alert box.
     color: Color32,
     /// The message displayed in the alert box.
@@ -70,6 +72,7 @@ pub struct Alert {
 impl Hash for Alert {
     /// Hash the alert's properties to ensure consistent behavior in hash maps and sets.
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.level.hash(state);
         self.color.hash(state);
         self.message.hash(state);
         self.inner_margin.hash(state);
@@ -84,6 +87,7 @@ impl Default for Alert {
     /// Creates a default alert with a generic error color and message.
     fn default() -> Self {
         Alert {
+            level: AlertLevel::Info,
             color: Color32::from_rgb(255, 200, 200),
             message: "No message provided".to_string(),
             inner_margin: 10,
@@ -98,8 +102,10 @@ impl Default for Alert {
 impl Alert {
     /// Create a new alert with the given message and default info color.
     pub fn new(message: &str) -> Self {
-        let color = Self::level_to_color(AlertLevel::Info);
+        let level = AlertLevel::Info;
+        let color = Self::level_to_color(level);
         Self {
+            level,
             color,
             message: message.to_string(),
             ..Default::default()
@@ -108,6 +114,7 @@ impl Alert {
 
     /// Set the alert's severity level, which determines its background color.
     pub fn with_level(mut self, level: AlertLevel) -> Self {
+        self.level = level;
         self.color = Self::level_to_color(level);
         self
     }
@@ -155,6 +162,11 @@ impl Alert {
     /// Expose alert message for external access.
     pub fn get_message(&self) -> &str {
         &self.message
+    }
+
+    /// Get the alert's severity level.
+    pub fn get_level(&self) -> AlertLevel {
+        self.level
     }
 }
 
