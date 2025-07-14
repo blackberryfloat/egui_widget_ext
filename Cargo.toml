@@ -11,7 +11,7 @@ keywords = ["egui", "widget", "gui", "ui", "extension"]
 documentation = "https://docs.rs/egui_widget_ext"
 
 [dependencies]
-egui = "0.31.1"
+egui = "0.32"
 chrono = { version = "0.4", features = ["wasmbind", "serde"] }
 
 [features]
@@ -22,11 +22,8 @@ toast=[]
 toast_manager=["toast"]
 all = ["alert_manager", "alert", "toggle_switch", "toast_manager", "toast"]
 
-[patch.crates-io]
-egui = { git = "https://github.com/blackberryfloat/egui.git", branch = "wm/stable-area-sizing-pass" }
-
 [dev-dependencies]
-eframe = "0.31.1"
+eframe = "0.32"
 
 [package.metadata.docs.rs]
 features = ["all"]
